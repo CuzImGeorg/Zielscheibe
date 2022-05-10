@@ -40,6 +40,7 @@ public class MainPanel extends JPanel {
         ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
         ses.scheduleAtFixedRate(()-> {
             updateUI();
+
         },0,4,TimeUnit.MILLISECONDS);
     }
 
@@ -54,7 +55,7 @@ public class MainPanel extends JPanel {
         ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
         ses.scheduleAtFixedRate(()-> {
             if(i.get()<9) {
-                Bild b = new Bild(3, 30, 980);
+                Bild b = new Bild(rdm.nextInt(5)+3, 30, 980);
                 waitingBilder.add(b);
                 toDraw.add(b);
                 b.moveup(960-(100*i.get()));
@@ -71,6 +72,8 @@ public class MainPanel extends JPanel {
     public void movein() {
         waitingBilder.get(0).moveIN(120);
         currentBild = waitingBilder.get(0);
+        currentBild.moveToMid();
+        currentBild.moveRdm();
         waitingBilder.remove(0);
         for(Bild t : waitingBilder) {
             t.moveup(100);
@@ -84,11 +87,12 @@ public class MainPanel extends JPanel {
             k.getY() < currentBild.getY()+80
         ){
             toDraw.remove(k);
-            currentBild.movedown(1000);
+            currentBild.movedown(1500);
             currentBild.setDead(true);
 
+
             movein();
-            Bild b = new Bild(3,30,730);
+            Bild b = new Bild(rdm.nextInt(5)+3,30,730);
             waitingBilder.add(b);
             toDraw.add(b);
 
