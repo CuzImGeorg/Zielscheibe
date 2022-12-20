@@ -1,6 +1,7 @@
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -16,9 +17,9 @@ public class Bild implements ToDraw{
 
     private boolean dead = false;
 
-    public Bild(int img, int x, int y ) {
+    public Bild(File img, int x, int y ) {
         try {
-            this.img = ImageIO.read(getClass().getResource("/" + img+".png"));
+            this.img = ImageIO.read(img);
             this.bloodimg = ImageIO.read(getClass().getResource("/blood.png"));
             this.ziel = ImageIO.read(getClass().getResource("/ziel.png"));
         } catch (IOException e) {
@@ -158,4 +159,6 @@ public class Bild implements ToDraw{
             g.drawImage(ziel,x,y,80,80,null);
         }
     }
+
+
 }

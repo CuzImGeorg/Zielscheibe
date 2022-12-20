@@ -2,7 +2,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.*;
 import java.lang.reflect.Array;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -16,8 +21,9 @@ public class MainPanel extends JPanel {
     private ArrayList<ToDraw> toDraw = new ArrayList<>();
     private ArrayList<Bild> waitingBilder = new ArrayList<>();
     private Bild currentBild;
-
+    private ArrayList<File> files = new ArrayList<>();
     private boolean gamestart = false;
+    private  String OS = System.getProperty("os.name").toLowerCase();
 
     private Random rdm = new Random();
 
@@ -29,10 +35,71 @@ public class MainPanel extends JPanel {
         setSize(1000,1000);
         x = 400;
         y = 400;
-        update();
-        mouseListner();
-        mainKnife();
-        firstCreateImg();
+        File[] file = null;
+        if(OS.startsWith("win")) {
+            file = new File(System.getenv("APPDATA")+ "/Iwilldesollesnimmer").listFiles();
+        }else {
+            file = new File( "/opt/Iwilldesollesnimmer").listFiles();
+
+        }
+
+        for(File f : file) {
+            files.add(f);
+        }
+
+        JButton b = new JButton();
+        b.setText("Upload img");
+        b.setBounds(900,900,100, 40);
+        b.setBackground(Color.CYAN);
+        Thread t = new Thread(()-> {
+            b.addActionListener((l)-> {
+                JFileChooser chooser = new JFileChooser();
+
+                int status = chooser.showOpenDialog(null);
+                if (status == JFileChooser.APPROVE_OPTION) {
+                    File f = chooser.getSelectedFile();
+                    if (f == null) {
+                        return;
+                    }
+                    files.add(f);
+                    var source = f;
+                    File dest = null;
+                    if(OS.startsWith("win")) {
+                        dest = new File(System.getenv("APPDATA")+ "/Iwilldesollesnimmer/" + f.getName());
+                    }else {
+                        dest = new File( "/opt/Iwilldesollesnimmer/" + f.getName());
+                    }
+
+                    try {
+                        Files.copy(source.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                }
+            });
+        });
+        t.start();
+
+        add(b);
+
+        Thread t2 = new Thread(() -> {
+            while (files.size() == 0) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            update();
+            mouseListner();
+            mainKnife();
+
+            firstCreateImg();
+        });
+        t2.start();
+
+
 
     }
 
@@ -55,7 +122,8 @@ public class MainPanel extends JPanel {
         ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
         ses.scheduleAtFixedRate(()-> {
             if(i.get()<9) {
-                Bild b = new Bild(rdm.nextInt(5)+3, 30, 980);
+//                Bild b = new Bild(2, 30, 980);
+                Bild b = new Bild(files.get(rdm.nextInt(files.size())), 30, 980);
                 waitingBilder.add(b);
                 toDraw.add(b);
                 b.moveup(960-(100*i.get()));
@@ -92,7 +160,8 @@ public class MainPanel extends JPanel {
 
 
             movein();
-            Bild b = new Bild(rdm.nextInt(5)+3,30,730);
+//            Bild b = new Bild(2,30,730);
+            Bild b = new Bild(files.get(rdm.nextInt(files.size())),30,730);
             waitingBilder.add(b);
             toDraw.add(b);
 
